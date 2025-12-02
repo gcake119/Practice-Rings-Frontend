@@ -5,7 +5,7 @@ const isLocalhost = ['localhost', '127.0.0.1', '::1', ''].includes(
 
 const API_BASE = isLocalhost
   ? 'http://localhost:3000'
-  : 'https://practice-rings-backend.zeabur.app/';
+  : 'https://practice-rings-backend.zeabur.app';
 
 // 全域狀態
 const state = {
