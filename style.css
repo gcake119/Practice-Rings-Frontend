@@ -1,0 +1,438 @@
+:root {
+  /* Doraemon 配色 */
+  --dora-blue: #009eff;
+  --dora-red: #e92024;
+  --dora-white: #ffffff;
+  --dora-bell: #ffd500;
+  --dora-text: #333333;
+  --dora-bg: #f0f8ff;
+  --ring-bg: #e4f2ff;
+}
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: 'Zen Maru Gothic', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  background-color: var(--dora-bg);
+  /* 方格紙背景 */
+  background-image:
+    linear-gradient(#e0e0e0 1px, transparent 1px),
+    linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: var(--dora-text);
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+/* 手繪風盒子 */
+.hand-drawn-box {
+  border: 3px solid var(--dora-text);
+  border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
+  box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Loading */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  background: var(--dora-blue);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.loading-icon {
+  font-size: 4rem;
+  animation: spin 2s infinite linear;
+}
+
+.loading-text {
+  color: var(--dora-white);
+  font-weight: 900;
+  margin-top: 16px;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* Header */
+.header {
+  max-width: 720px;
+  margin: 10px auto 0;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+}
+
+.header-date {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.header-title {
+  font-size: 1.6rem;
+  font-weight: 900;
+  color: var(--dora-blue);
+  text-align: center;
+  text-shadow: 2px 2px 0 var(--dora-white), -1px -1px 0 var(--dora-text);
+}
+
+/* Layout */
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 8px 16px 32px;
+}
+
+.section-title {
+  font-size: 1.1rem;
+  font-weight: 900;
+  margin-bottom: 10px;
+  color: var(--dora-text);
+}
+
+/* Timer section */
+.timer-section {
+  margin-top: 8px;
+  padding: 16px;
+  background: var(--dora-white);
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.mode-button {
+  flex: 1 1 30%;
+  padding: 8px 10px;
+  font-size: 0.9rem;
+  font-weight: 800;
+  border-radius: 999px;
+  border: 2px solid var(--dora-text);
+  background: var(--dora-bell);
+  color: var(--dora-text);
+  cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+}
+
+.mode-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.mode-button.active {
+  background: var(--dora-red);
+  color: var(--dora-white);
+}
+
+.timer-display {
+  text-align: center;
+  margin: 12px 0;
+}
+
+.timer-mode-label {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 4px;
+}
+
+.timer-clock {
+  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, monospace;
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--dora-blue);
+  text-shadow: 2px 2px 0 var(--dora-white), -1px -1px 0 var(--dora-text);
+}
+
+.timer-controls {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.primary-button,
+.secondary-button {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 2px solid var(--dora-text);
+  font-weight: 800;
+  font-size: 0.9rem;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.12);
+  background: var(--dora-white);
+  color: var(--dora-text);
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+}
+
+.primary-button {
+  background: var(--dora-blue);
+  color: var(--dora-white);
+}
+
+.primary-button:hover,
+.secondary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Rings section */
+.rings-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--dora-white);
+}
+
+.rings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .rings-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.ring-card {
+  padding: 12px;
+  background: var(--ring-bg);
+  border-radius: 24px;
+  border: 3px solid var(--dora-text);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.12);
+}
+
+.ring-title {
+  font-size: 1rem;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.ring-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 6px 0;
+}
+
+.ring-circle {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background:
+    conic-gradient(var(--ring-color) var(--ring-percent), #e5e5e5 0deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-circle-inner {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: var(--dora-white);
+  border: 2px solid var(--dora-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ring-percent-text {
+  font-size: 1rem;
+  font-weight: 900;
+  color: var(--dora-text);
+}
+
+.ring-info {
+  text-align: center;
+  margin-top: 4px;
+}
+
+.ring-text {
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+/* 今日摘要 */
+.today-summary-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--dora-white);
+}
+
+.today-numbers {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.today-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+}
+
+.today-note {
+  margin-bottom: 10px;
+}
+
+.today-note label {
+  display: block;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+#todayNote {
+  width: 100%;
+  min-height: 72px;
+  padding: 8px;
+  border-radius: 12px;
+  border: 2px solid var(--dora-text);
+  font-family: inherit;
+  font-size: 0.9rem;
+  resize: vertical;
+}
+
+/* 歷史紀錄 */
+.history-section {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--dora-white);
+}
+
+/* 最近修煉記錄：七天小圈圈列 */
+.history-list {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  align-items: flex-end;
+  overflow-x: auto;
+  padding-top: 8px;
+}
+
+/* 單一天的小卡片 */
+.history-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+}
+
+/* 日期文字 */
+.history-day-date {
+  font-size: 0.7rem;
+  margin-bottom: 4px;
+  color: #666;
+}
+
+/* 三合一同心圓容器 */
+.history-rings {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+/* 外圈 / 中圈 / 內圈半徑設定 */
+.history-ring-outer,
+.history-ring-middle,
+.history-ring-inner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  border-radius: 50%;
+  background: conic-gradient(var(--ring-color) var(--ring-percent), #e5e5e5 0deg);
+}
+
+/* 外圈：最大 */
+.history-ring-outer {
+  width: 40px;
+  height: 40px;
+}
+
+/* 中圈：略小 */
+.history-ring-middle {
+  width: 30px;
+  height: 30px;
+}
+
+/* 內圈：最小 */
+.history-ring-inner {
+  width: 20px;
+  height: 20px;
+}
+
+/* 中心空白圓，讓圈圈看起來更像指標 */
+.history-ring-center {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--dora-white);
+  border: 1px solid #ccc;
+}
+
+/* 三個模式的顏色沿用原本設定 */
+.history-ring-outer {
+  --ring-color: #ff5b5b; /* coding */
+}
+
+.history-ring-middle {
+  --ring-color: #3ac48b; /* reading */
+}
+
+.history-ring-inner {
+  --ring-color: #ffb347; /* writing */
+}
+
+/* 各模式顏色 */
+.ring-coding {
+  --ring-color: #ff5b5b;
+}
+
+.ring-reading {
+  --ring-color: #3ac48b;
+}
+
+.ring-writing {
+  --ring-color: #ffb347;
+}
+
+.bar-coding {
+  background: #ff5b5b;
+}
+
+.bar-reading {
+  background: #3ac48b;
+}
+
+.bar-writing {
+  background: #ffb347;
+}
