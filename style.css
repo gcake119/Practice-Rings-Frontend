@@ -319,6 +319,25 @@ body {
   resize: vertical;
 }
 
+.today-manual-time {
+  margin-top: 12px;
+  border-top: 1px dashed #ddd;
+  padding-top: 10px;
+}
+
+.manual-time-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 0.85rem;
+}
+
+.manual-time-label {
+  min-width: 90px;
+}
+
+
 /* 歷史紀錄 */
 .history-section {
   margin-top: 16px;

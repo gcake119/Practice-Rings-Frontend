@@ -10,7 +10,11 @@
 
     <!-- 圖示 -->
 
-    <link rel="apple-touch-icon" sizes="180x180" href="./apple-touch-icon.png" />
+    <link
+      rel="apple-touch-icon"
+      sizes="180x180"
+      href="./apple-touch-icon.png"
+    />
     <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
     <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png" />
 
@@ -30,137 +34,212 @@
       <p class="loading-text">正在準備今天的修煉圈圈...</p>
     </div>
 
-    <!-- 頂部：日期 + 標題 -->
-    <header class="header">
-      <div class="header-date" id="headerDate">
-        <!-- 例如：12 月 2 日（週二） -->
+    <!-- 登入區：預設隱藏，JS 決定要不要顯示 -->
+    <section id="loginSection" style="display: none">
+      <div class="container">
+        <header class="header hand-drawn-box">
+          <div class="header-title">修煉圈圈 Practice Rings</div>
+          <div class="header-date">請先登入以開始修煉</div>
+        </header>
+
+        <section
+          class="hand-drawn-box"
+          style="margin-top: 16px; padding: 16px; background: #fff"
+        >
+          <h2 class="section-title">登入 Login</h2>
+          <p style="font-size: 0.9rem; margin-bottom: 8px">
+            請輸入你的修煉密碼，只有本人才能讀寫進度。
+          </p>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <input
+              id="loginPassword"
+              type="password"
+              placeholder="輸入密碼"
+              style="
+                flex: 1;
+                padding: 8px;
+                border-radius: 8px;
+                border: 2px solid #333;
+              "
+            />
+            <button id="loginButton" class="primary-button">登入 Login</button>
+          </div>
+        </section>
       </div>
-      <h1 class="header-title">修煉圈圈 Practice Rings</h1>
-    </header>
+    </section>
 
-    <main class="container" id="mainContent" style="display: none">
-      <!-- 模式計時器區 -->
-      <section class="timer-section">
-        <h2 class="section-title">模式計時器</h2>
-
-        <div class="mode-buttons">
-          <button class="mode-button" data-mode="coding" id="modeCodingButton">
-            刷題模式 Coding
-          </button>
-          <button
-            class="mode-button"
-            data-mode="reading"
-            id="modeReadingButton"
-          >
-            閱讀模式 Reading
-          </button>
-          <button
-            class="mode-button"
-            data-mode="writing"
-            id="modeWritingButton"
-          >
-            筆記模式 Writing
-          </button>
+    <!-- 主應用區：原本的內容整個包進來 -->
+    <section id="appSection" style="display: none">
+      <!-- 頂部：日期 + 標題 -->
+      <header class="header">
+        <div class="header-date" id="headerDate">
+          <!-- 例如：12 月 2 日（週二） -->
         </div>
+        <h1 class="header-title">修煉圈圈 Practice Rings</h1>
+      </header>
 
-        <div class="timer-display">
-          <div id="currentModeLabel" class="timer-mode-label">尚未開始</div>
-          <div id="timerClock" class="timer-clock">00:00:00</div>
-        </div>
+      <main class="container" id="mainContent">
+        <!-- 模式計時器區 -->
+        <section class="timer-section">
+          <h2 class="section-title">模式計時器</h2>
 
-        <div class="timer-controls">
-          <button id="timerStartButton" class="primary-button">
-            開始 Start
-          </button>
-          <button id="timerPauseButton" class="secondary-button">
-            暫停 Pause
-          </button>
-          <button id="timerResetButton" class="secondary-button">
-            重設 Reset
-          </button>
-        </div>
-      </section>
+          <div class="mode-buttons">
+            <button
+              class="mode-button"
+              data-mode="coding"
+              id="modeCodingButton"
+            >
+              刷題模式 Coding
+            </button>
+            <button
+              class="mode-button"
+              data-mode="reading"
+              id="modeReadingButton"
+            >
+              閱讀模式 Reading
+            </button>
+            <button
+              class="mode-button"
+              data-mode="writing"
+              id="modeWritingButton"
+            >
+              筆記模式 Writing
+            </button>
+          </div>
 
-      <!-- 三個圈圈區 -->
-      <section class="rings-section">
-        <h2 class="section-title">今日進度 Today Rings</h2>
-        <div class="rings-grid">
-          <!-- Coding Ring -->
-          <div class="ring-card" id="codingRingCard">
-            <h3 class="ring-title">刷題 Coding</h3>
-            <div class="ring-visual" id="codingRing">
-              <!-- 可用 canvas / SVG 或純 CSS 之後再實作 -->
-              <div class="ring-placeholder">Coding Ring</div>
+          <div class="timer-display">
+            <div id="currentModeLabel" class="timer-mode-label">尚未開始</div>
+            <div id="timerClock" class="timer-clock">00:00:00</div>
+          </div>
+
+          <div class="timer-controls">
+            <button id="timerStartButton" class="primary-button">
+              開始 Start
+            </button>
+            <button id="timerPauseButton" class="secondary-button">
+              暫停 Pause
+            </button>
+            <button id="timerResetButton" class="secondary-button">
+              重設 Reset
+            </button>
+          </div>
+        </section>
+
+        <!-- 三個圈圈區 -->
+        <section class="rings-section">
+          <h2 class="section-title">今日進度 Today Rings</h2>
+          <div class="rings-grid">
+            <!-- Coding Ring -->
+            <div class="ring-card" id="codingRingCard">
+              <h3 class="ring-title">刷題 Coding</h3>
+              <div class="ring-visual" id="codingRing">
+                <!-- 可用 canvas / SVG 或純 CSS 之後再實作 -->
+                <div class="ring-placeholder">Coding Ring</div>
+              </div>
+              <div class="ring-info">
+                <div id="codingText" class="ring-text">0 / 180 分鐘</div>
+              </div>
             </div>
-            <div class="ring-info">
-              <div id="codingText" class="ring-text">0 / 180 分鐘</div>
+
+            <!-- Reading Ring -->
+            <div class="ring-card" id="readingRingCard">
+              <h3 class="ring-title">閱讀 Reading</h3>
+              <div class="ring-visual" id="readingRing">
+                <div class="ring-placeholder">Reading Ring</div>
+              </div>
+              <div class="ring-info">
+                <div id="readingText" class="ring-text">0 / 90 分鐘</div>
+              </div>
+            </div>
+
+            <!-- Writing Ring -->
+            <div class="ring-card" id="writingRingCard">
+              <h3 class="ring-title">筆記 Writing</h3>
+              <div class="ring-visual" id="writingRing">
+                <div class="ring-placeholder">Writing Ring</div>
+              </div>
+              <div class="ring-info">
+                <div id="writingText" class="ring-text">0 / 30 分鐘</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- 今日摘要區 -->
+        <section class="today-summary-section hand-drawn-box">
+          <h2 class="section-title">今日摘要 Today Summary</h2>
+          <div class="today-numbers">
+            <div class="today-item">
+              <span>刷題</span>
+              <span id="codingMinutesDisplay">0 分鐘</span>
+            </div>
+            <div class="today-item">
+              <span>閱讀</span>
+              <span id="readingMinutesDisplay">0 分鐘</span>
+            </div>
+            <div class="today-item">
+              <span>筆記</span>
+              <span id="writingMinutesDisplay">0 分鐘</span>
             </div>
           </div>
 
-          <!-- Reading Ring -->
-          <div class="ring-card" id="readingRingCard">
-            <h3 class="ring-title">閱讀 Reading</h3>
-            <div class="ring-visual" id="readingRing">
-              <div class="ring-placeholder">Reading Ring</div>
+          <div class="today-note">
+            <label for="todayNote">今日重點 Note</label>
+            <textarea
+              id="todayNote"
+              rows="3"
+              placeholder="今天這一輪修煉最重要的收穫是什麼？"
+            ></textarea>
+          </div>
+
+          <button id="saveTodayButton" class="primary-button">
+            儲存今天 Save Today
+          </button>
+          <!-- 新增：手動時間輸入區 -->
+          <div class="today-manual-time">
+            <h3 class="section-title">手動輸入時間 Manual Time</h3>
+
+            <div class="manual-time-row">
+              <span class="manual-time-label">刷題 Coding</span>
+              <input id="codingStartTime" type="time" />
+              <span>→</span>
+              <input id="codingEndTime" type="time" />
+              <button id="codingAddTimeButton" class="secondary-button">
+                加入本日
+              </button>
             </div>
-            <div class="ring-info">
-              <div id="readingText" class="ring-text">0 / 90 分鐘</div>
+
+            <div class="manual-time-row">
+              <span class="manual-time-label">閱讀 Reading</span>
+              <input id="readingStartTime" type="time" />
+              <span>→</span>
+              <input id="readingEndTime" type="time" />
+              <button id="readingAddTimeButton" class="secondary-button">
+                加入本日
+              </button>
+            </div>
+
+            <div class="manual-time-row">
+              <span class="manual-time-label">筆記 Writing</span>
+              <input id="writingStartTime" type="time" />
+              <span>→</span>
+              <input id="writingEndTime" type="time" />
+              <button id="writingAddTimeButton" class="secondary-button">
+                加入本日
+              </button>
             </div>
           </div>
+        </section>
 
-          <!-- Writing Ring -->
-          <div class="ring-card" id="writingRingCard">
-            <h3 class="ring-title">筆記 Writing</h3>
-            <div class="ring-visual" id="writingRing">
-              <div class="ring-placeholder">Writing Ring</div>
-            </div>
-            <div class="ring-info">
-              <div id="writingText" class="ring-text">0 / 30 分鐘</div>
-            </div>
+        <!-- 歷史紀錄區 -->
+        <section class="history-section">
+          <h2 class="section-title">最近修煉紀錄 Recent Days</h2>
+          <div id="historyList" class="history-list">
+            <!-- 由 app.js 動態插入 -->
           </div>
-        </div>
-      </section>
-
-      <!-- 今日摘要區 -->
-      <section class="today-summary-section">
-        <h2 class="section-title">今日摘要 Today Summary</h2>
-        <div class="today-numbers">
-          <div class="today-item">
-            <span>刷題</span>
-            <span id="codingMinutesDisplay">0 分鐘</span>
-          </div>
-          <div class="today-item">
-            <span>閱讀</span>
-            <span id="readingMinutesDisplay">0 分鐘</span>
-          </div>
-          <div class="today-item">
-            <span>筆記</span>
-            <span id="writingMinutesDisplay">0 分鐘</span>
-          </div>
-        </div>
-
-        <div class="today-note">
-          <label for="todayNote">今日重點 Note</label>
-          <textarea
-            id="todayNote"
-            rows="3"
-            placeholder="今天這一輪修煉最重要的收穫是什麼？"
-          ></textarea>
-        </div>
-
-        <button id="saveTodayButton" class="primary-button">
-          儲存今天 Save Today
-        </button>
-      </section>
-
-      <!-- 歷史紀錄區 -->
-      <section class="history-section">
-        <h2 class="section-title">最近修煉紀錄 Recent Days</h2>
-        <div id="historyList" class="history-list">
-          <!-- 由 app.js 動態插入 -->
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </section>
 
     <!-- 錯誤提示橫幅 -->
     <div id="toast" class="toast" style="display: none"></div>
