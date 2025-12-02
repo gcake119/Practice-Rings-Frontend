@@ -144,7 +144,17 @@ async function login(password) {
   });
 
   if (!res.ok) {
-    throw new Error('登入失敗');
+    // 嘗試讀一下錯誤訊息（可選）
+    let errorMessage = '登入失敗';
+    try {
+      const errorBody = await res.json();
+      if (errorBody && errorBody.error) {
+        errorMessage = errorBody.error;
+      }
+    } catch (_) {
+      // ignore
+    }
+    throw new Error(errorMessage);
   }
 
   const data = await res.json();
