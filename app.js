@@ -1,6 +1,6 @@
 // 基本設定：本機 node 測試時用 http://localhost:3000 
 // 如果後端在 Zeabur，改成例如：'https://practice-rings-api.zeabur.app'
-const API_BASE = 'http://localhost:3000';
+const API_BASE = 'https://practice-rings-backend.zeabur.app';
 
 // 全域狀態
 const state = {
@@ -115,7 +115,7 @@ async function fetchRecentProgress(days = 7) {
   state.recentRecords = Array.isArray(data.records) ? data.records : [];
 }
 
-async function saveToday() {
+async function saveTodayFull() {
   const body = {
     date: state.currentDate,
     codingMinutes: state.todayMinutes.coding,
@@ -126,12 +126,46 @@ async function saveToday() {
 
   const res = await fetch(`${API_BASE}/api/progress`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(body),
   });
 
   if (!res.ok) throw new Error('儲存失敗');
 }
+
+async function saveTodayMinutesOnly() {
+  const body = {
+    date: state.currentDate,
+    codingMinutes: state.todayMinutes.coding,
+    readingMinutes: state.todayMinutes.reading,
+    writingMinutes: state.todayMinutes.writing,
+    // 不傳 note，後端會保留原本的 note
+  };
+
+  const res = await fetch(`${API_BASE}/api/progress`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) throw new Error('儲存時間失敗');
+}
+
+
+function showToast(message) {
+  const toast = document.getElementById('toast');
+  if (!toast) return;
+  toast.textContent = message;
+  toast.style.display = 'block';
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 3000);
+}
+
 
 // === 模式與計時器邏輯 ===
 function modeLabel(mode) {
@@ -230,6 +264,12 @@ function pauseOrStopTimer() {
       state.todayMinutes[state.currentMode] += elapsedMinutes;
     }
 
+    // 自動儲存目前累積時間（不含 note）
+    saveTodayMinutesOnly().catch((err) => {
+      console.error(err);
+      showToast('自動儲存時間失敗，下次結束計時時會再試一次。');
+    });
+
     // 重置計時狀態
     state.timerPausedElapsedMs = 0;
     state.currentMode = null;
@@ -315,7 +355,7 @@ function renderTodayNumbers() {
   readingMinutesDisplayEl.textContent = `${state.todayMinutes.reading} 分鐘`;
   writingMinutesDisplayEl.textContent = `${state.todayMinutes.writing} 分鐘`;
   todayNoteEl.value = state.note || '';
-  updateSaveButtonLabel(); 
+  updateSaveButtonLabel();
 }
 
 function renderHistory() {
@@ -403,7 +443,7 @@ timerResetButton.addEventListener('click', resetTimerOnly);
 
 todayNoteEl.addEventListener('input', (e) => {
   state.note = e.target.value;
-  updateSaveButtonLabel(); 
+  updateSaveButtonLabel();
 });
 
 saveTodayButton.addEventListener('click', async () => {
@@ -412,7 +452,7 @@ saveTodayButton.addEventListener('click', async () => {
     if (state.timerRunning || state.timerPausedElapsedMs > 0) {
       pauseOrStopTimer();
     }
-    await saveToday();
+    await saveTodayFull();
     await fetchRecentProgress(7);
     renderHistory();
     alert('今天的修煉已儲存 ✨');

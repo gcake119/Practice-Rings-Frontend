@@ -8,6 +8,12 @@
     />
     <title>修煉圈圈 Practice Rings</title>
 
+    <!-- 圖示 -->
+
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png" />
+
     <!-- 字型與樣式 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -38,11 +44,7 @@
         <h2 class="section-title">模式計時器</h2>
 
         <div class="mode-buttons">
-          <button
-            class="mode-button"
-            data-mode="coding"
-            id="modeCodingButton"
-          >
+          <button class="mode-button" data-mode="coding" id="modeCodingButton">
             刷題模式 Coding
           </button>
           <button
@@ -62,16 +64,20 @@
         </div>
 
         <div class="timer-display">
-          <div id="currentModeLabel" class="timer-mode-label">
-            尚未開始
-          </div>
+          <div id="currentModeLabel" class="timer-mode-label">尚未開始</div>
           <div id="timerClock" class="timer-clock">00:00:00</div>
         </div>
 
         <div class="timer-controls">
-          <button id="timerStartButton" class="primary-button">開始 Start</button>
-          <button id="timerPauseButton" class="secondary-button">暫停 Pause</button>
-          <button id="timerResetButton" class="secondary-button">重設 Reset</button>
+          <button id="timerStartButton" class="primary-button">
+            開始 Start
+          </button>
+          <button id="timerPauseButton" class="secondary-button">
+            暫停 Pause
+          </button>
+          <button id="timerResetButton" class="secondary-button">
+            重設 Reset
+          </button>
         </div>
       </section>
 
@@ -87,9 +93,7 @@
               <div class="ring-placeholder">Coding Ring</div>
             </div>
             <div class="ring-info">
-              <div id="codingText" class="ring-text">
-                0 / 180 分鐘
-              </div>
+              <div id="codingText" class="ring-text">0 / 180 分鐘</div>
             </div>
           </div>
 
@@ -100,9 +104,7 @@
               <div class="ring-placeholder">Reading Ring</div>
             </div>
             <div class="ring-info">
-              <div id="readingText" class="ring-text">
-                0 / 90 分鐘
-              </div>
+              <div id="readingText" class="ring-text">0 / 90 分鐘</div>
             </div>
           </div>
 
@@ -113,9 +115,7 @@
               <div class="ring-placeholder">Writing Ring</div>
             </div>
             <div class="ring-info">
-              <div id="writingText" class="ring-text">
-                0 / 30 分鐘
-              </div>
+              <div id="writingText" class="ring-text">0 / 30 分鐘</div>
             </div>
           </div>
         </div>
@@ -161,6 +161,9 @@
         </div>
       </section>
     </main>
+
+    <!-- 錯誤提示橫幅 -->
+    <div id="toast" class="toast" style="display: none"></div>
 
     <script src="./app.js"></script>
   </body>
