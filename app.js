@@ -1,6 +1,11 @@
-// 基本設定：本機 node 測試時用 http://localhost:3000
-// 如果後端在 Zeabur，改成例如：'https://practice-rings-backend.zeabur.app/'
-const API_BASE = "https://practice-rings-backend.zeabur.app/";
+// 自動判斷環境：本機用 localhost API，其他（GitHub Pages / 手機）用 Zeabur
+const isLocalhost = ['localhost', '127.0.0.1', '::1', ''].includes(
+  window.location.hostname,
+);
+
+const API_BASE = isLocalhost
+  ? 'http://localhost:3000'
+  : 'https://practice-rings-backend.zeabur.app/';
 
 // 全域狀態
 const state = {
