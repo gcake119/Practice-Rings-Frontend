@@ -1,11 +1,11 @@
 // 自動判斷環境：本機用 localhost API，其他（GitHub Pages / 手機）用 Zeabur
-const isLocalhost = ['localhost', '127.0.0.1', '::1', ''].includes(
-  window.location.hostname,
+const isLocalhost = ["localhost", "127.0.0.1", "::1", ""].includes(
+  window.location.hostname
 );
 
 const API_BASE = isLocalhost
-  ? 'http://localhost:3000'
-  : 'https://practice-rings-backend.zeabur.app';
+  ? "http://localhost:3000"
+  : "https://practice-rings-backend.zeabur.app";
 
 // 全域狀態
 const state = {
@@ -37,11 +37,107 @@ const state = {
   recentRecords: [],
 };
 
+// 勉勵台詞資料
+const messages = {
+  total: {
+    zero: [
+      "哎呀呀，今天的學習道具還沒啟動呢！快讓我看看你要從哪裡開始吧〜！",
+      "什麼？今天還沒動工？大雄都比你積極的時候我可要緊張囉！",
+    ],
+    low: [
+      "嗯～已經邁出一步啦，再多一點點就能啟動『幹勁加倍燈』囉！",
+      "今天的你已經開始轉動齒輪了，再推一下就會跑起來的！",
+    ],
+    medium: [
+      "哦哦！看得出來你努力的影子囉！再加把勁就能讓哆啦A夢驕傲啦〜！",
+      "已經做到這樣很棒了！再往前一步，就能看到新風景喔！",
+    ],
+    high: [
+      "哇—進度好快！再一口氣，你就會像搭上時光機一樣直衝目標啦！",
+      "這股幹勁真不錯，再小小努力一下就能達成今天的冒險任務囉！",
+    ],
+    maxed: [
+      "太～～厲害了！今天的你根本是未來世界的超級工程師！",
+      "完成啦！哆啦A夢要頒給你一個『今日成就滿點章』！",
+      "呼哇！全滿！這種成就感比空氣砲直接命中還要爽快吧！",
+    ],
+  },
+
+  coding: {
+    zero: [
+      "今天還沒動手敲程式嗎？要不要叫出『自動寫程式機』……欸不對，你自己寫才會成長啦！",
+      "程式碼區還空空的耶，要不要開始敲一行給我看看嘛？",
+    ],
+    low: [
+      "嗯！已經開始動腦了，再敲幾行你就會進入『專注模式』囉！",
+      "手指動起來！你已經有點熱身感覺了，再來一點！",
+    ],
+    medium: [
+      "看起來你的腦袋齒輪正在快速運轉中呢！這個氣勢不錯喔！",
+      "這進度就像把竹蜻蜓開到中速，再推一下就能升空啦！",
+    ],
+    high: [
+      "哇！程式碼噼哩啪啦地冒出來了！你今天超有效率耶！",
+      "再一點點就能觸發『程式天才模式』啦，衝刺吧！",
+    ],
+    maxed: [
+      "滿分！你今天的 Coding 火力全開！簡直像拿到道具一樣順！",
+      "好耶！你今天寫的程式碼連未來世界的我都想收藏！",
+    ],
+  },
+
+  reading: {
+    zero: [
+      "嗯？今天還沒翻開技術書嗎？來嘛～看個一頁也好呀！",
+      "要不要我用『翻頁幫手機』幫你翻第一頁？…啊，不行，你自己翻比較厲害啦！",
+    ],
+    low: [
+      "好耶，開始吸收新知識了！這樣才能進化成超級工程師！",
+      "閱讀的第一步最重要，你已經成功踏出去了！",
+    ],
+    medium: [
+      "讀到這裡很不錯喔！再多吸收一點技術力會更強！",
+      "你的腦袋正在閃閃發亮呢！繼續保持這個節奏吧！",
+    ],
+    high: [
+      "哇～你今天的閱讀量好像開了『知識加速器』一樣耶！",
+      "再看一點就能觸發「哆啦A夢讚嘆模式」囉！",
+    ],
+    maxed: [
+      "知識全滿！你今天的腦容量升級成功！",
+      "你的閱讀量比大雄考試前念的還多十倍！太棒啦！",
+    ],
+  },
+
+  writing: {
+    zero: [
+      "今天還沒寫筆記嗎？我準備好任意筆記本等你開工囉！",
+      "來嘛～記一兩句也好，想法不寫下來會飛走的喔！",
+    ],
+    low: [
+      "嗯嗯～開始動筆了喔！技術整理就是一步一步累積的！",
+      "只要寫下一點點，未來的你就會感謝現在的你！",
+    ],
+    medium: [
+      "這篇筆記開始有模有樣囉！繼續寫你會更清楚自己的想法！",
+      "很好很好，再補幾句就會變成超實用的知識寶藏！",
+    ],
+    high: [
+      "快完成啦！今天的你寫筆記像哆啦A夢講故事一樣流暢！",
+      "哇～筆記快要成形了，這份內容未來一定會救你一命！",
+    ],
+    maxed: [
+      "滿分！今日技術筆記完成！你根本是自己的迷你哆啦A夢！",
+      "太棒了！這份筆記會像法寶一樣在未來幫你解決大麻煩！",
+    ],
+  },
+};
+
 // DOM 取得
-const loginSectionEl = document.getElementById('loginSection');
-const appSectionEl = document.getElementById('appSection');
-const loginPasswordInput = document.getElementById('loginPassword');
-const loginButton = document.getElementById('loginButton');
+const loginSectionEl = document.getElementById("loginSection");
+const appSectionEl = document.getElementById("appSection");
+const loginPasswordInput = document.getElementById("loginPassword");
+const loginButton = document.getElementById("loginButton");
 
 const loadingEl = document.getElementById("loading");
 const mainContentEl = document.getElementById("mainContent");
@@ -75,18 +171,17 @@ const saveTodayButton = document.getElementById("saveTodayButton");
 const historyListEl = document.getElementById("historyList");
 
 // 手動時間輸入
-const codingStartTimeInput = document.getElementById('codingStartTime');
-const codingEndTimeInput = document.getElementById('codingEndTime');
-const codingAddTimeButton = document.getElementById('codingAddTimeButton');
+const codingStartTimeInput = document.getElementById("codingStartTime");
+const codingEndTimeInput = document.getElementById("codingEndTime");
+const codingAddTimeButton = document.getElementById("codingAddTimeButton");
 
-const readingStartTimeInput = document.getElementById('readingStartTime');
-const readingEndTimeInput = document.getElementById('readingEndTime');
-const readingAddTimeButton = document.getElementById('readingAddTimeButton');
+const readingStartTimeInput = document.getElementById("readingStartTime");
+const readingEndTimeInput = document.getElementById("readingEndTime");
+const readingAddTimeButton = document.getElementById("readingAddTimeButton");
 
-const writingStartTimeInput = document.getElementById('writingStartTime');
-const writingEndTimeInput = document.getElementById('writingEndTime');
-const writingAddTimeButton = document.getElementById('writingAddTimeButton');
-
+const writingStartTimeInput = document.getElementById("writingStartTime");
+const writingEndTimeInput = document.getElementById("writingEndTime");
+const writingAddTimeButton = document.getElementById("writingAddTimeButton");
 
 // 日期字串：YYYY-MM-DD
 function getTodayString() {
@@ -118,11 +213,10 @@ function formatTime(ms) {
 
 function parseTimeToMinutes(value) {
   if (!value) return null;
-  const [hh, mm] = value.split(':').map((v) => Number(v));
+  const [hh, mm] = value.split(":").map((v) => Number(v));
   if (Number.isNaN(hh) || Number.isNaN(mm)) return null;
   return hh * 60 + mm;
 }
-
 
 // 包裝 headers，統一帶 token
 function buildHeaders(extra = {}) {
@@ -136,16 +230,16 @@ function buildHeaders(extra = {}) {
 // === 登入 ===
 async function login(password) {
   const res = await fetch(`${API_BASE}/api/login`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ password }),
   });
 
   if (!res.ok) {
     // 嘗試讀一下錯誤訊息（可選）
-    let errorMessage = '登入失敗';
+    let errorMessage = "登入失敗";
     try {
       const errorBody = await res.json();
       if (errorBody && errorBody.error) {
@@ -159,7 +253,7 @@ async function login(password) {
 
   const data = await res.json();
   if (!data.token) {
-    throw new Error('登入失敗：缺少 token');
+    throw new Error("登入失敗：缺少 token");
   }
 
   state.token = data.token;
@@ -185,9 +279,10 @@ async function fetchSettings() {
 
 async function fetchTodayProgress() {
   const res = await fetch(
-    `${API_BASE}/api/progress?date=${encodeURIComponent(state.currentDate)}`, {
-    headers: buildHeaders(),
-  }
+    `${API_BASE}/api/progress?date=${encodeURIComponent(state.currentDate)}`,
+    {
+      headers: buildHeaders(),
+    }
   );
   if (!res.ok) throw new Error("無法取得今日進度");
   const data = await res.json();
@@ -201,9 +296,10 @@ async function fetchTodayProgress() {
 
 async function fetchRecentProgress(days = 7) {
   const res = await fetch(
-    `${API_BASE}/api/progress/recent?days=${encodeURIComponent(days)}`, {
-    headers: buildHeaders(),
-  }
+    `${API_BASE}/api/progress/recent?days=${encodeURIComponent(days)}`,
+    {
+      headers: buildHeaders(),
+    }
   );
   if (!res.ok) throw new Error("無法取得歷史紀錄");
   const data = await res.json();
@@ -221,7 +317,7 @@ async function saveTodayFull() {
 
   const res = await fetch(`${API_BASE}/api/progress`, {
     method: "POST",
-    headers: buildHeaders({ 'Content-Type': 'application/json' }),
+    headers: buildHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(body),
   });
 
@@ -239,7 +335,7 @@ async function saveTodayMinutesOnly() {
 
   const res = await fetch(`${API_BASE}/api/progress`, {
     method: "POST",
-    headers: buildHeaders({ 'Content-Type': 'application/json' }),
+    headers: buildHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify(body),
   });
 
@@ -299,7 +395,7 @@ function setMode(mode) {
 // 開始計時
 function startTimer() {
   if (!state.currentMode) {
-    alert("請先選擇一個模式");
+    showToast("請先選擇一個模式");
     return;
   }
   if (state.timerRunning) {
@@ -402,12 +498,12 @@ async function addManualTime(mode, startValue, endValue) {
   const end = parseTimeToMinutes(endValue);
 
   if (start === null || end === null) {
-    showToast('請輸入有效時間（HH:MM）');
+    showToast("請輸入有效時間（HH:MM）");
     return;
   }
 
   if (end <= start) {
-    showToast('結束時間必須晚於開始時間');
+    showToast("結束時間必須晚於開始時間");
     return;
   }
 
@@ -419,11 +515,61 @@ async function addManualTime(mode, startValue, endValue) {
 
   try {
     await saveTodayMinutesOnly();
-    showToast('已加入本日時間並自動儲存');
+    showToast("已加入本日時間並自動儲存");
+
+    // ✅ 成功後清空 state.manualTime
+    if (state.manualTime && state.manualTime[mode]) {
+      state.manualTime[mode] = { start: "", end: "" };
+    }
+
+    // ✅ 成功後清空對應 input 欄位
+    const inputIds = {
+      coding: { start: "codingStartTime", end: "codingEndTime" },
+      reading: { start: "readingStartTime", end: "readingEndTime" },
+      writing: { start: "writingStartTime", end: "writingEndTime" },
+    };
+
+    const ids = inputIds[mode];
+    if (ids) {
+      const startInput = document.getElementById(ids.start);
+      const endInput = document.getElementById(ids.end);
+      if (startInput) startInput.value = "";
+      if (endInput) endInput.value = "";
+    }
   } catch (err) {
     console.error(err);
-    showToast('手動時間儲存失敗，下次操作時會再嘗試');
+    showToast("手動時間儲存失敗，下次操作時會再嘗試");
   }
+}
+
+// 隨機取勉勵台詞
+function pickRandom(arr) {
+  const index = Math.floor(Math.random() * arr.length);
+  return arr[index];
+}
+
+// 根據總完成百分比設定 key
+function getLevelKey(percentage) {
+  if (percentage === 0) return "zero";
+  if (percentage < 30) return "low";
+  if (percentage < 70) return "medium";
+  if (percentage < 100) return "high";
+  return "maxed";
+}
+
+// 取得台詞內容
+function getTotalMessage(totalMinutes) {
+  const percentage = (totalMinutes / 360) * 100;
+  const levelKey = getLevelKey(percentage);
+  const pool = messages.total[levelKey];
+  return pickRandom(pool);
+}
+
+function getModeMessage(mode, minutes, goalMinutes) {
+  const percentage = (minutes / goalMinutes) * 100;
+  const levelKey = getLevelKey(percentage);
+  const pool = messages[mode][levelKey];
+  return pickRandom(pool);
 }
 
 // === Render ===
@@ -484,6 +630,41 @@ function renderTodayNumbers() {
   updateSaveButtonLabel();
 }
 
+function renderEncouragement() {
+  const totalMessageEl = document.getElementById("totalMessageText");
+  const codingMessageEl = document.getElementById("codingMessageText");
+  const readingMessageEl = document.getElementById("readingMessageText");
+  const writingMessageEl = document.getElementById("writingMessageText");
+
+  if (
+    !totalMessageEl ||
+    !codingMessageEl ||
+    !readingMessageEl ||
+    !writingMessageEl
+  ) {
+    return;
+  }
+
+  const { coding, reading, writing } = state.todayMinutes;
+  const {
+    coding: codingGoal,
+    reading: readingGoal,
+    writing: writingGoal,
+  } = state.goals;
+
+  const totalMinutes = coding + reading + writing;
+
+  const totalMessage = getTotalMessage(totalMinutes);
+  const codingMessage = getModeMessage("coding", coding, codingGoal);
+  const readingMessage = getModeMessage("reading", reading, readingGoal);
+  const writingMessage = getModeMessage("writing", writing, writingGoal);
+
+  totalMessageEl.textContent = `今日總時數：${totalMinutes} 分鐘。${totalMessage}`;
+  codingMessageEl.textContent = `刷題 Coding：${coding} / ${codingGoal} 分鐘。${codingMessage}`;
+  readingMessageEl.textContent = `閱讀 Reading：${reading} / ${readingGoal} 分鐘。${readingMessage}`;
+  writingMessageEl.textContent = `筆記 Writing：${writing} / ${writingGoal} 分鐘。${writingMessage}`;
+}
+
 function renderHistory() {
   historyListEl.innerHTML = "";
   if (!state.recentRecords.length) {
@@ -540,21 +721,80 @@ function renderAll() {
   renderHistory();
 }
 
+function renderEncouragement() {
+  const totalEl = document.getElementById("totalMessageText");
+  const codingEl = document.getElementById("codingMessageText");
+  const readingEl = document.getElementById("readingMessageText");
+  const writingEl = document.getElementById("writingMessageText");
+
+  const totalLabelEl = document.getElementById("totalProgressLabel");
+  const codingBarEl = document.getElementById("totalCodingBar");
+  const readingBarEl = document.getElementById("totalReadingBar");
+  const writingBarEl = document.getElementById("totalWritingBar");
+
+  if (!totalEl || !codingEl || !readingEl || !writingEl) {
+    return;
+  }
+
+  const { coding, reading, writing } = state.todayMinutes;
+  const {
+    coding: codingGoal,
+    reading: readingGoal,
+    writing: writingGoal,
+  } = state.goals;
+
+  const totalMinutes = coding + reading + writing;
+  const base = 360;
+  const cappedTotal = Math.min(totalMinutes, base);
+  const totalPercent = Math.min(Math.round((totalMinutes / base) * 100), 999);
+
+  const totalMessage = getTotalMessage(totalMinutes);
+  const codingMessage = getModeMessage("coding", coding, codingGoal);
+  const readingMessage = getModeMessage("reading", reading, readingGoal);
+  const writingMessage = getModeMessage("writing", writing, writingGoal);
+
+  // --- 計算三段寬度（百分比） ---
+let codingWidth = 0;
+let readingWidth = 0;
+let writingWidth = 0;
+
+if (totalMinutes <= base) {
+  // 情境 1：未超過今日目標，直接用「自己 / 360」
+  codingWidth = (coding / base) * 100;
+  readingWidth = (reading / base) * 100;
+  writingWidth = (writing / base) * 100;
+} else {
+  // 情境 2：超過 360，改用「自己 / 總分鐘」比例，整條滿 100%
+  const safeTotal = totalMinutes || 1; // 避免 0 分鐘除以 0
+  codingWidth = (coding / safeTotal) * 100;
+  readingWidth = (reading / safeTotal) * 100;
+  writingWidth = (writing / safeTotal) * 100;
+}
+
+  codingBarEl.style.width = `${codingWidth}%`;
+  readingBarEl.style.width = `${readingWidth}%`;
+  writingBarEl.style.width = `${writingWidth}%`;
+
+  // ✅ 進度條中央的文字：總分鐘 + 百分比
+  totalLabelEl.textContent = `${totalMinutes} 分鐘・${totalPercent}%`;
+
+  // ✅ 底下只顯示 Doraemon 台詞，不再重複數字
+  totalEl.textContent = `${totalMessage}`;
+
+  // 各圈圈卡片下方：顯示專屬台詞
+  codingEl.textContent = `${codingMessage}`;
+  readingEl.textContent = `${readingMessage}`;
+  writingEl.textContent = `${writingMessage}`;
+}
+
 // === 初始化 ===
 async function init() {
   try {
-    // 嘗試從 localStorage 恢復 token
-    // const savedToken = localStorage.getItem('practiceRingsToken');
-    // if (savedToken) {
-    //   state.token = savedToken;
-    //   state.isAuthenticated = true;
-    // }
-
     if (!state.isAuthenticated) {
       // 還沒登入，只顯示登入區
-      loadingEl.style.display = 'none';
-      loginSectionEl.style.display = 'block';
-      appSectionEl.style.display = 'none';
+      loadingEl.style.display = "none";
+      loginSectionEl.style.display = "block";
+      appSectionEl.style.display = "none";
       return;
     }
 
@@ -563,22 +803,23 @@ async function init() {
     await fetchTodayProgress();
     await fetchRecentProgress(7);
     renderAll();
+    renderEncouragement(); // ✅ 根據目前 todayMinutes + goals 顯示文案
 
-    loadingEl.style.display = 'none';
-    loginSectionEl.style.display = 'none';
-    appSectionEl.style.display = 'block';
+    loadingEl.style.display = "none";
+    loginSectionEl.style.display = "none";
+    appSectionEl.style.display = "block";
   } catch (err) {
     console.error(err);
-    loadingEl.style.display = 'none';
-    showToast('初始化失敗，請重新整理或檢查登入狀態');
+    loadingEl.style.display = "none";
+    showToast("初始化失敗，請重新整理或檢查登入狀態");
   }
 }
 
 // === 事件綁定 ===
-loginButton.addEventListener('click', async () => {
+loginButton.addEventListener("click", async () => {
   const pwd = loginPasswordInput.value.trim();
   if (!pwd) {
-    showToast('請先輸入密碼');
+    showToast("請先輸入密碼");
     return;
   }
   try {
@@ -586,17 +827,17 @@ loginButton.addEventListener('click', async () => {
     await init();
   } catch (err) {
     console.error(err);
-    showToast('登入失敗，請確認密碼是否正確');
+    showToast("登入失敗，請確認密碼是否正確");
   }
 });
 
-loginPasswordInput.addEventListener('keydown', async (event) => {
-  if (event.key !== 'Enter') return;
+loginPasswordInput.addEventListener("keydown", async (event) => {
+  if (event.key !== "Enter") return;
 
   event.preventDefault(); // 避免預設行為
   const pwd = loginPasswordInput.value.trim();
   if (!pwd) {
-    showToast('請先輸入密碼');
+    showToast("請先輸入密碼");
     return;
   }
 
@@ -605,10 +846,9 @@ loginPasswordInput.addEventListener('keydown', async (event) => {
     await init();
   } catch (err) {
     console.error(err);
-    showToast('登入失敗，請確認密碼是否正確');
+    showToast("登入失敗，請確認密碼是否正確");
   }
 });
-
 
 modeCodingButton.addEventListener("click", () => setMode("coding"));
 modeReadingButton.addEventListener("click", () => setMode("reading"));
@@ -632,23 +872,33 @@ saveTodayButton.addEventListener("click", async () => {
     await saveTodayFull();
     await fetchRecentProgress(7);
     renderHistory();
-    alert("今天的修煉已儲存 ✨");
+    renderEncouragement(); // ✅ 儲存成功後更新文案
+
+    showToast("今天的修煉已儲存 ✨");
   } catch (err) {
     console.error(err);
-    alert("儲存失敗，請稍後再試");
+    showToast("儲存失敗，請稍後再試");
   }
 });
 
-codingAddTimeButton.addEventListener('click', () => {
-  addManualTime('coding', codingStartTimeInput.value, codingEndTimeInput.value);
+codingAddTimeButton.addEventListener("click", () => {
+  addManualTime("coding", codingStartTimeInput.value, codingEndTimeInput.value);
 });
 
-readingAddTimeButton.addEventListener('click', () => {
-  addManualTime('reading', readingStartTimeInput.value, readingEndTimeInput.value);
+readingAddTimeButton.addEventListener("click", () => {
+  addManualTime(
+    "reading",
+    readingStartTimeInput.value,
+    readingEndTimeInput.value
+  );
 });
 
-writingAddTimeButton.addEventListener('click', () => {
-  addManualTime('writing', writingStartTimeInput.value, writingEndTimeInput.value);
+writingAddTimeButton.addEventListener("click", () => {
+  addManualTime(
+    "writing",
+    writingStartTimeInput.value,
+    writingEndTimeInput.value
+  );
 });
 
 document.addEventListener("DOMContentLoaded", init);

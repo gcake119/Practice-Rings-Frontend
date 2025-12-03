@@ -13,18 +13,30 @@
     <link
       rel="apple-touch-icon"
       sizes="180x180"
-      href="./apple-touch-icon.png"
+      href="./assets/apple-touch-icon.png"
     />
-    <link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="./favicon-16.png" />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="./assets/favicon-32.png"
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="16x16"
+      href="./assets/favicon-16.png"
+    />
 
     <!-- 字型與樣式 -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Huninn&display=swap"
       rel="stylesheet"
     />
+    ›
+
     <link rel="stylesheet" href="./style.css" />
   </head>
   <body>
@@ -138,6 +150,7 @@
               </div>
               <div class="ring-info">
                 <div id="codingText" class="ring-text">0 / 180 分鐘</div>
+                <p id="codingMessageText" class="encouragement-mode"></p>
               </div>
             </div>
 
@@ -149,6 +162,7 @@
               </div>
               <div class="ring-info">
                 <div id="readingText" class="ring-text">0 / 90 分鐘</div>
+                <p id="readingMessageText" class="encouragement-mode"></p>
               </div>
             </div>
 
@@ -160,6 +174,7 @@
               </div>
               <div class="ring-info">
                 <div id="writingText" class="ring-text">0 / 30 分鐘</div>
+                <p id="writingMessageText" class="encouragement-mode"></p>
               </div>
             </div>
           </div>
@@ -182,6 +197,29 @@
               <span id="writingMinutesDisplay">0 分鐘</span>
             </div>
           </div>
+          <div class="today-encouragement">
+            <div class="total-progress">
+              <div class="total-progress-bar">
+                <div
+                  id="totalCodingBar"
+                  class="total-progress-segment bar-coding"
+                ></div>
+                <div
+                  id="totalReadingBar"
+                  class="total-progress-segment bar-reading"
+                ></div>
+                <div
+                  id="totalWritingBar"
+                  class="total-progress-segment bar-writing"
+                ></div>
+                <span
+                  id="totalProgressLabel"
+                  class="total-progress-label"
+                ></span>
+              </div>
+              <p id="totalMessageText" class="encouragement-total"></p>
+            </div>
+          </div>
 
           <div class="today-note">
             <label for="todayNote">今日重點 Note</label>
@@ -200,30 +238,36 @@
             <h3 class="section-title">手動輸入時間 Manual Time</h3>
 
             <div class="manual-time-row">
-              <span class="manual-time-label">刷題 Coding</span>
-              <input id="codingStartTime" type="time" />
-              <span>→</span>
-              <input id="codingEndTime" type="time" />
+              <div class="manual-time-top">
+                <span class="manual-time-label">刷題 Coding</span>
+                <input id="codingStartTime" type="time" />
+                <span>→</span>
+                <input id="codingEndTime" type="time" />
+              </div>
               <button id="codingAddTimeButton" class="secondary-button">
                 加入本日
               </button>
             </div>
 
             <div class="manual-time-row">
-              <span class="manual-time-label">閱讀 Reading</span>
-              <input id="readingStartTime" type="time" />
-              <span>→</span>
-              <input id="readingEndTime" type="time" />
+              <div class="manual-time-top">
+                <span class="manual-time-label">閱讀 Reading</span>
+                <input id="readingStartTime" type="time" />
+                <span>→</span>
+                <input id="readingEndTime" type="time" />
+              </div>
               <button id="readingAddTimeButton" class="secondary-button">
                 加入本日
               </button>
             </div>
 
             <div class="manual-time-row">
-              <span class="manual-time-label">筆記 Writing</span>
-              <input id="writingStartTime" type="time" />
-              <span>→</span>
-              <input id="writingEndTime" type="time" />
+              <div class="manual-time-top">
+                <span class="manual-time-label">筆記 Writing</span>
+                <input id="writingStartTime" type="time" />
+                <span>→</span>
+                <input id="writingEndTime" type="time" />
+              </div>
               <button id="writingAddTimeButton" class="secondary-button">
                 加入本日
               </button>
@@ -242,7 +286,7 @@
     </section>
 
     <!-- 錯誤提示橫幅 -->
-    <div id="toast" class="toast" style="display: none"></div>
+    <div id="toast" class="toast"></div>
 
     <script src="./app.js"></script>
   </body>
