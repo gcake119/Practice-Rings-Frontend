@@ -35,6 +35,7 @@ const state = {
   },
   note: "",
   recentRecords: [],
+  historyViewMode: 'week', // 'week' | 'month'
 };
 
 // 勉勵台詞資料
@@ -291,6 +292,7 @@ async function fetchTodayProgress() {
     reading: Number(data.readingMinutes) || 0,
     writing: Number(data.writingMinutes) || 0,
   };
+  updateProgressUI();
   state.note = data.note || "";
 }
 
@@ -455,6 +457,7 @@ function pauseOrStopTimer() {
     const elapsedMinutes = Math.floor(state.timerPausedElapsedMs / 60000);
     if (elapsedMinutes > 0) {
       state.todayMinutes[state.currentMode] += elapsedMinutes;
+      updateProgressUI();
     }
 
     // 自動儲存目前累積時間（不含 note）
@@ -510,8 +513,7 @@ async function addManualTime(mode, startValue, endValue) {
   const delta = end - start; // 差值就是分鐘數
 
   state.todayMinutes[mode] += delta;
-  renderTodayNumbers();
-  renderRings();
+  updateProgressUI();
 
   try {
     await saveTodayMinutesOnly();
@@ -630,39 +632,10 @@ function renderTodayNumbers() {
   updateSaveButtonLabel();
 }
 
-function renderEncouragement() {
-  const totalMessageEl = document.getElementById("totalMessageText");
-  const codingMessageEl = document.getElementById("codingMessageText");
-  const readingMessageEl = document.getElementById("readingMessageText");
-  const writingMessageEl = document.getElementById("writingMessageText");
-
-  if (
-    !totalMessageEl ||
-    !codingMessageEl ||
-    !readingMessageEl ||
-    !writingMessageEl
-  ) {
-    return;
-  }
-
-  const { coding, reading, writing } = state.todayMinutes;
-  const {
-    coding: codingGoal,
-    reading: readingGoal,
-    writing: writingGoal,
-  } = state.goals;
-
-  const totalMinutes = coding + reading + writing;
-
-  const totalMessage = getTotalMessage(totalMinutes);
-  const codingMessage = getModeMessage("coding", coding, codingGoal);
-  const readingMessage = getModeMessage("reading", reading, readingGoal);
-  const writingMessage = getModeMessage("writing", writing, writingGoal);
-
-  totalMessageEl.textContent = `今日總時數：${totalMinutes} 分鐘。${totalMessage}`;
-  codingMessageEl.textContent = `刷題 Coding：${coding} / ${codingGoal} 分鐘。${codingMessage}`;
-  readingMessageEl.textContent = `閱讀 Reading：${reading} / ${readingGoal} 分鐘。${readingMessage}`;
-  writingMessageEl.textContent = `筆記 Writing：${writing} / ${writingGoal} 分鐘。${writingMessage}`;
+function updateProgressUI() {
+  renderTodayNumbers();
+  renderRings();
+  renderEncouragement();
 }
 
 function renderHistory() {
@@ -816,39 +789,79 @@ async function init() {
 }
 
 // === 事件綁定 ===
-loginButton.addEventListener("click", async () => {
+// 按鈕點擊登入
+loginButton.addEventListener('click', async () => {
   const pwd = loginPasswordInput.value.trim();
   if (!pwd) {
-    showToast("請先輸入密碼");
+    showToast('請先輸入密碼');
     return;
   }
+
+  // 一開始就打開 loading、隱藏其它區塊
+  loadingEl.style.display = 'flex';
+  loginSectionEl.style.display = 'none';
+  if (appSectionEl) {
+    appSectionEl.style.display = 'none';
+  }
+
+  try {
+    await login(pwd); // 設定 state.token, state.isAuthenticated
+    await init(); // 由 init 來關閉 loading、顯示 app 或登入區
+  } catch (err) {
+    console.error(err);
+
+    // 登入或初始化失敗 → 關掉 loading、回登入畫面
+    loadingEl.style.display = 'none';
+    loginSectionEl.style.display = 'block';
+    if (appSectionEl) {
+      appSectionEl.style.display = 'none';
+    }
+
+    showToast('登入失敗，請確認密碼是否正確');
+    state.isAuthenticated = false;
+    state.token = '';
+  } finally {
+    loginPasswordInput.value = '';
+  }
+});
+
+// 按 Enter 登入
+loginPasswordInput.addEventListener('keydown', async (event) => {
+  if (event.key !== 'Enter') return;
+
+  event.preventDefault();
+  const pwd = loginPasswordInput.value.trim();
+  if (!pwd) {
+    showToast('請先輸入密碼');
+    return;
+  }
+
+  loadingEl.style.display = 'flex';
+  loginSectionEl.style.display = 'none';
+  if (appSectionEl) {
+    appSectionEl.style.display = 'none';
+  }
+
   try {
     await login(pwd);
     await init();
   } catch (err) {
     console.error(err);
-    showToast("登入失敗，請確認密碼是否正確");
+
+    loadingEl.style.display = 'none';
+    loginSectionEl.style.display = 'block';
+    if (appSectionEl) {
+      appSectionEl.style.display = 'none';
+    }
+
+    showToast('登入失敗，請確認密碼是否正確');
+    state.isAuthenticated = false;
+    state.token = '';
+  } finally {
+    loginPasswordInput.value = '';
   }
 });
 
-loginPasswordInput.addEventListener("keydown", async (event) => {
-  if (event.key !== "Enter") return;
-
-  event.preventDefault(); // 避免預設行為
-  const pwd = loginPasswordInput.value.trim();
-  if (!pwd) {
-    showToast("請先輸入密碼");
-    return;
-  }
-
-  try {
-    await login(pwd);
-    await init();
-  } catch (err) {
-    console.error(err);
-    showToast("登入失敗，請確認密碼是否正確");
-  }
-});
 
 modeCodingButton.addEventListener("click", () => setMode("coding"));
 modeReadingButton.addEventListener("click", () => setMode("reading"));
@@ -872,7 +885,6 @@ saveTodayButton.addEventListener("click", async () => {
     await saveTodayFull();
     await fetchRecentProgress(7);
     renderHistory();
-    renderEncouragement(); // ✅ 儲存成功後更新文案
 
     showToast("今天的修煉已儲存 ✨");
   } catch (err) {
