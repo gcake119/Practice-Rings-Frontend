@@ -399,16 +399,17 @@ body {
   gap: 8px;
   justify-content: space-between;
   align-items: flex-end;
-  overflow-x: auto;
+  overflow-x: hidden;   /* 關閉 X 軸捲動，讓內容強制縮進一行 */
   padding-top: 8px;
 }
 
-/* 單一天的小卡片 */
+/* 每一天的小卡片：改用彈性寬度，平均分成七格 */
 .history-day {
+  flex: 1 1 calc((100% - 6 * 8px) / 7); /* 7 個項目，中間 6 個 gap */
+  max-width: calc((100% - 6 * 8px) / 7);
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 60px;
 }
 
 /* 日期文字 */
