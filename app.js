@@ -35,7 +35,7 @@ const state = {
   },
   note: "",
   recentRecords: [],
-  historyViewMode: 'week', // 'week' | 'month'
+  historyViewMode: "week", // 'week' | 'month'
 };
 
 // 勉勵台詞資料
@@ -183,6 +183,19 @@ const readingAddTimeButton = document.getElementById("readingAddTimeButton");
 const writingStartTimeInput = document.getElementById("writingStartTime");
 const writingEndTimeInput = document.getElementById("writingEndTime");
 const writingAddTimeButton = document.getElementById("writingAddTimeButton");
+
+// === 當日卡片 Modal ===
+
+const dayCardModal = document.getElementById("dayCardModal");
+const dayCardContent = document.getElementById("dayCardContent");
+const dayCardClose = document.getElementById("dayCardClose");
+const dayCardPrev = document.getElementById("dayCardPrev");
+const dayCardNext = document.getElementById("dayCardNext");
+
+let currentViewDate = ""; // 目前 Modal 顯示的日期
+let currentMonthDate = new Date(); // 控制月檢視顯示哪個月
+
+const dayCardCalendarToggle = document.getElementById('dayCardCalendarToggle');
 
 // 日期字串：YYYY-MM-DD
 function getTodayString() {
@@ -574,6 +587,47 @@ function getModeMessage(mode, minutes, goalMinutes) {
   return pickRandom(pool);
 }
 
+/**
+ * 打開當日卡片 Modal
+ * @param {string} dateStr - 格式：YYYY-MM-DD
+ */
+async function openDayCard(dateStr) {
+  currentViewDate = dateStr;
+  dayCardModal.style.display = "flex";
+
+  try {
+    await renderDayCard(dateStr);
+  } catch (err) {
+    console.error(err);
+    showToast("無法載入該日紀錄");
+    closeDayCard();
+  }
+}
+
+/**
+ * 關閉當日卡片 Modal
+ */
+function closeDayCard() {
+  dayCardModal.style.display = "none";
+  currentViewDate = "";
+  document.body.style.overflow = ''; // 回復背景捲動
+}
+
+function openMonthView(focusDateStr) {
+  document.body.style.overflow = 'hidden'; // 鎖背景捲動
+  // 隱藏行事曆按鈕（進入月檢視後不需要了）
+  const calendarBtn = document.getElementById('dayCardCalendarToggle');
+  if (calendarBtn) {
+    calendarBtn.style.display = 'none';
+  }
+
+  // 以目前卡片日期為中心月份
+  const [y, m] = focusDateStr.split('-').map((v) => Number(v));
+  currentMonthDate = new Date(y, m - 1, 1);
+
+  renderMonthView();
+}
+
 // === Render ===
 function renderRings() {
   renderRing(
@@ -665,6 +719,7 @@ function renderHistory() {
 
     const item = document.createElement("div");
     item.className = "history-day";
+    item.dataset.date = r.date;
 
     // 日期只顯示「MM-DD」比較不占空間
     let dateLabel = r.date || "";
@@ -682,6 +737,14 @@ function renderHistory() {
         <div class="history-ring-center"></div>
       </div>
     `;
+
+    // ✅ 點擊整個小卡片 → 開啟單日卡片
+    item.addEventListener("click", () => {
+      const dateStr = item.dataset.date;
+      if (dateStr) {
+        openDayCard(dateStr);
+      }
+    });
 
     historyListEl.appendChild(item);
   });
@@ -727,22 +790,22 @@ function renderEncouragement() {
   const writingMessage = getModeMessage("writing", writing, writingGoal);
 
   // --- 計算三段寬度（百分比） ---
-let codingWidth = 0;
-let readingWidth = 0;
-let writingWidth = 0;
+  let codingWidth = 0;
+  let readingWidth = 0;
+  let writingWidth = 0;
 
-if (totalMinutes <= base) {
-  // 情境 1：未超過今日目標，直接用「自己 / 360」
-  codingWidth = (coding / base) * 100;
-  readingWidth = (reading / base) * 100;
-  writingWidth = (writing / base) * 100;
-} else {
-  // 情境 2：超過 360，改用「自己 / 總分鐘」比例，整條滿 100%
-  const safeTotal = totalMinutes || 1; // 避免 0 分鐘除以 0
-  codingWidth = (coding / safeTotal) * 100;
-  readingWidth = (reading / safeTotal) * 100;
-  writingWidth = (writing / safeTotal) * 100;
-}
+  if (totalMinutes <= base) {
+    // 情境 1：未超過今日目標，直接用「自己 / 360」
+    codingWidth = (coding / base) * 100;
+    readingWidth = (reading / base) * 100;
+    writingWidth = (writing / base) * 100;
+  } else {
+    // 情境 2：超過 360，改用「自己 / 總分鐘」比例，整條滿 100%
+    const safeTotal = totalMinutes || 1; // 避免 0 分鐘除以 0
+    codingWidth = (coding / safeTotal) * 100;
+    readingWidth = (reading / safeTotal) * 100;
+    writingWidth = (writing / safeTotal) * 100;
+  }
 
   codingBarEl.style.width = `${codingWidth}%`;
   readingBarEl.style.width = `${readingWidth}%`;
@@ -758,6 +821,368 @@ if (totalMinutes <= base) {
   codingEl.textContent = `${codingMessage}`;
   readingEl.textContent = `${readingMessage}`;
   writingEl.textContent = `${writingMessage}`;
+}
+
+/**
+ * 渲染當日卡片內容
+ * @param {string} dateStr - 格式：YYYY-MM-DD
+ */
+async function renderDayCard(dateStr) {
+  // 顯示行事曆按鈕（回到日檢視時需要）
+  const calendarBtn = document.getElementById('dayCardCalendarToggle');
+  if (calendarBtn) {
+    calendarBtn.style.display = 'flex';
+  }
+  // 呼叫 API 取得該日資料
+  const res = await fetch(
+    `${API_BASE}/api/progress?date=${encodeURIComponent(dateStr)}`,
+    { headers: buildHeaders() }
+  );
+
+  if (!res.ok) throw new Error("無法取得該日紀錄");
+
+  const data = await res.json();
+
+  const codingMinutes = Number(data.codingMinutes) || 0;
+  const readingMinutes = Number(data.readingMinutes) || 0;
+  const writingMinutes = Number(data.writingMinutes) || 0;
+  const note = data.note || "（無筆記）";
+
+  // 格式化日期顯示
+  const dateObj = new Date(dateStr + "T00:00:00");
+  const month = dateObj.getMonth() + 1;
+  const date = dateObj.getDate();
+  const dayIndex = dateObj.getDay();
+  const days = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
+  const dateLabel = `${month} 月 ${date} 日（${days[dayIndex]}）`;
+
+  // 計算完成度
+  const codingP =
+    state.goals.coding > 0
+      ? Math.min(codingMinutes / state.goals.coding, 1)
+      : 0;
+  const readingP =
+    state.goals.reading > 0
+      ? Math.min(readingMinutes / state.goals.reading, 1)
+      : 0;
+  const writingP =
+    state.goals.writing > 0
+      ? Math.min(writingMinutes / state.goals.writing, 1)
+      : 0;
+
+  const codingDeg = codingP * 360;
+  const readingDeg = readingP * 360;
+  const writingDeg = writingP * 360;
+
+  // 填入 HTML
+  dayCardContent.innerHTML = `
+    <div class="day-card-header">
+    <div class="day-card-header-left">
+      <div class="day-card-date">${dateLabel}</div>
+      <div class="day-card-subtitle">今日練習圈圈</div>
+    </div>
+  </div>
+
+  <div class="day-card-main">
+    <div class="day-card-rings">
+  <div class="day-card-rings-outer" style="--ring-percent: ${codingDeg}deg;"></div>
+  <div class="day-card-rings-middle" style="--ring-percent: ${readingDeg}deg;"></div>
+  <div class="day-card-rings-inner" style="--ring-percent: ${writingDeg}deg;"></div>
+  <div class="day-card-rings-center"></div>
+</div>
+
+    <div class="day-card-text">
+      <div class="day-card-row day-card-row-coding">
+        <span class="day-card-label">刷題 Coding</span>
+        <span class="day-card-value">${codingMinutes} / ${state.goals.coding} 分鐘</span>
+      </div>
+      <div class="day-card-row day-card-row-reading">
+        <span class="day-card-label">閱讀 Reading</span>
+        <span class="day-card-value">${readingMinutes} / ${state.goals.reading} 分鐘</span>
+      </div>
+      <div class="day-card-row day-card-row-writing">
+        <span class="day-card-label">筆記 Writing</span>
+        <span class="day-card-value">${writingMinutes} / ${state.goals.writing} 分鐘</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="day-card-note">
+    <div class="day-card-note-title">📝 當日筆記</div>
+    <div class="day-card-note-body">${note}</div>
+  </div>
+
+  <div class="day-card-nav">
+    <button id="dayCardPrev" class="secondary-button">← 前一天</button>
+    <button id="dayCardNext" class="secondary-button">後一天 →</button>
+  </div>
+`;
+
+// 綁定事件
+const prevBtn = document.getElementById('dayCardPrev');
+const nextBtn = document.getElementById('dayCardNext');
+
+if (prevBtn) prevBtn.addEventListener('click', showPrevDay);
+if (nextBtn) nextBtn.addEventListener('click', showNextDay);
+
+  // 更新導航按鈕狀態
+  updateDayCardNav(dateStr);
+
+}
+
+/**
+ * 更新導航按鈕狀態（前一天/後一天）
+ * @param {string} dateStr - 格式：YYYY-MM-DD
+ */
+function updateDayCardNav(dateStr) {
+  const prevBtn = document.getElementById('dayCardPrev');
+  const nextBtn = document.getElementById('dayCardNext');
+
+  // 若目前不是日檢視（按鈕不存在），就不用處理
+  if (!prevBtn || !nextBtn) {
+    return;
+  }
+
+  const today = getTodayString();
+
+  // 先確保 recentRecords 依日期由新到舊排序
+  if (Array.isArray(state.recentRecords) && state.recentRecords.length > 0) {
+    state.recentRecords.sort((a, b) => (a.date > b.date ? -1 : 1));
+  }
+
+  const dates = Array.isArray(state.recentRecords)
+    ? state.recentRecords.map((r) => r.date)
+    : [];
+
+  const earliestDate = dates.length ? dates[dates.length - 1] : dateStr;
+
+  // 字串 YYYY-MM-DD 可以直接安全比較
+  prevBtn.disabled = dateStr <= earliestDate;
+  nextBtn.disabled = dateStr >= today;
+}
+
+
+function shiftDateString(dateStr, offsetDays) {
+  const [y, m, d] = dateStr.split('-').map((v) => Number(v));
+  const base = new Date(y, m - 1, d);
+  base.setDate(base.getDate() + offsetDays);
+  const yyyy = base.getFullYear();
+  const mm = String(base.getMonth() + 1).padStart(2, '0');
+  const dd = String(base.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+async function showPrevDay() {
+  if (!currentViewDate) return;
+
+  const prev = shiftDateString(currentViewDate, -1);
+
+  currentViewDate = prev;
+  await renderDayCard(prev);
+}
+
+async function showNextDay() {
+  if (!currentViewDate) return;
+
+  const next = shiftDateString(currentViewDate, 1);
+
+  currentViewDate = next;
+  await renderDayCard(next);
+}
+
+function renderMonthView() {
+  const year = currentMonthDate.getFullYear();
+  const month = currentMonthDate.getMonth(); // 0-based
+
+  const monthLabel = `${year} 年 ${month + 1} 月`;
+
+  // 當月第一天是星期幾（週一為 1，週日為 7）
+  const firstDay = new Date(year, month, 1);
+  let startWeekday = firstDay.getDay(); // 0(日)~6(六)
+  startWeekday = startWeekday === 0 ? 7 : startWeekday; // 改成 1~7，週一=1
+
+  // 當月天數
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+  const cells = [];
+
+  // 前面補上個月的尾巴
+  for (let i = startWeekday - 2; i >= 0; i -= 1) {
+    const day = daysInPrevMonth - i;
+    const cellDate = new Date(year, month - 1, day);
+    cells.push({ date: cellDate, inMonth: false });
+  }
+
+  // 本月
+  for (let d = 1; d <= daysInMonth; d += 1) {
+    const cellDate = new Date(year, month, d);
+    cells.push({ date: cellDate, inMonth: true });
+  }
+
+  // 後面補下個月開頭，湊滿 6 列 * 7 欄 = 42 格
+  while (cells.length < 42) {
+    const last = cells[cells.length - 1].date;
+    const next = new Date(last);
+    next.setDate(last.getDate() + 1);
+    cells.push({ date: next, inMonth: false });
+  }
+
+  // 把 recentRecords 變成以 YYYY-MM-DD 為 key 的 map，方便查詢
+  const recordMap = {};
+  state.recentRecords.forEach((r) => {
+    recordMap[r.date] = r;
+  });
+
+  // 產生星期標題
+  const weekHeaderHtml = `
+    <div class="month-week-row">
+      <div>一</div>
+      <div>二</div>
+      <div>三</div>
+      <div>四</div>
+      <div>五</div>
+      <div>六</div>
+      <div>日</div>
+    </div>
+  `;
+
+  // 日期格子
+  let gridHtml = '<div class="month-grid">';
+  cells.forEach(({ date, inMonth }) => {
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    const key = `${yyyy}-${mm}-${dd}`;
+    const displayDay = date.getDate();
+
+    const rec = recordMap[key];
+
+    const codingMinutes = rec ? Number(rec.codingMinutes) || 0 : 0;
+    const readingMinutes = rec ? Number(rec.readingMinutes) || 0 : 0;
+    const writingMinutes = rec ? Number(rec.writingMinutes) || 0 : 0;
+
+    const codingP =
+      state.goals.coding > 0
+        ? Math.min(codingMinutes / state.goals.coding, 1)
+        : 0;
+    const readingP =
+      state.goals.reading > 0
+        ? Math.min(readingMinutes / state.goals.reading, 1)
+        : 0;
+    const writingP =
+      state.goals.writing > 0
+        ? Math.min(writingMinutes / state.goals.writing, 1)
+        : 0;
+
+    const codingDeg = codingP * 360;
+    const readingDeg = readingP * 360;
+    const writingDeg = writingP * 360;
+
+    gridHtml += `
+      <div class="month-cell ${inMonth ? '' : 'month-cell-outside'}" data-date="${key}">
+        <div class="month-cell-day">${displayDay}</div>
+        <div class="month-cell-rings">
+          <div class="month-ring-outer" style="--ring-percent: ${codingDeg}deg;"></div>
+          <div class="month-ring-middle" style="--ring-percent: ${readingDeg}deg;"></div>
+          <div class="month-ring-inner" style="--ring-percent: ${writingDeg}deg;"></div>
+          <div class="month-ring-center"></div>
+        </div>
+      </div>
+    `;
+  });
+  gridHtml += '</div>';
+
+dayCardContent.innerHTML = `
+  <div class="month-view-header">
+    <button class="day-card-calendar-button" id="monthBackToDay" aria-label="回到日檢視">←</button>
+    <div class="month-view-title">${monthLabel}</div>
+    <div></div>
+  </div>
+  ${weekHeaderHtml}
+  ${gridHtml}
+  <div class="month-view-nav">
+    <button id="monthPrevBtn" class="secondary-button">← 上月</button>
+    <button id="monthNextBtn" class="secondary-button">下月 →</button>
+  </div>
+`;
+
+  // 綁定事件：返回日檢視 / 上月 / 下月 / 點日期
+  const backBtn = document.getElementById('monthBackToDay');
+  const prevBtn = document.getElementById('monthPrevBtn');
+  const nextBtn = document.getElementById('monthNextBtn');
+
+  if (backBtn) {
+    backBtn.addEventListener('click', () => {
+      // 回到目前 currentViewDate 的日檢視
+      if (currentViewDate) {
+        renderDayCard(currentViewDate);
+      }
+    });
+  }
+
+  if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+      currentMonthDate = new Date(year, month - 1, 1);
+      renderMonthView();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+      currentMonthDate = new Date(year, month + 1, 1);
+      renderMonthView();
+    });
+  }
+
+  document.querySelectorAll('.month-cell').forEach((cell) => {
+    cell.addEventListener('click', () => {
+      const dateStr = cell.dataset.date;
+      if (!dateStr) return;
+      // 更新目前查看日期並回到日檢視卡片
+      currentViewDate = dateStr;
+      renderDayCard(dateStr);
+    });
+  });
+
+  function attachMonthSwipeHandlers() {
+  const contentEl = document.querySelector('.month-grid')
+  if (!contentEl) return;
+
+  let touchStartY = 0;
+  let touchEndY = 0;
+  const SWIPE_THRESHOLD = 50; // 觸發最小距離（px）
+
+  function handleTouchStart(e) {
+    if (!e.changedTouches || e.changedTouches.length === 0) return;
+    touchStartY = e.changedTouches[0].clientY;
+  }
+
+  function handleTouchEnd(e) {
+    if (!e.changedTouches || e.changedTouches.length === 0) return;
+    touchEndY = e.changedTouches[0].clientY;
+    const deltaY = touchEndY - touchStartY;
+
+    // 僅在螢幕較窄時啟用（手機）
+    if (window.innerWidth > 768) return;
+
+    // 向上滑（往上拖） → 下一個月
+    if (deltaY < -SWIPE_THRESHOLD) {
+      const nextBtn = document.getElementById('monthNextBtn');
+      if (nextBtn) nextBtn.click();
+    }
+
+    // 向下滑 → 上一個月
+    if (deltaY > SWIPE_THRESHOLD) {
+      const prevBtn = document.getElementById('monthPrevBtn');
+      if (prevBtn) prevBtn.click();
+    }
+  }
+
+  contentEl.addEventListener('touchstart', handleTouchStart, { passive: true });
+  contentEl.addEventListener('touchend', handleTouchEnd, { passive: true });
+}
+  attachMonthSwipeHandlers();
 }
 
 // === 初始化 ===
@@ -790,18 +1215,18 @@ async function init() {
 
 // === 事件綁定 ===
 // 按鈕點擊登入
-loginButton.addEventListener('click', async () => {
+loginButton.addEventListener("click", async () => {
   const pwd = loginPasswordInput.value.trim();
   if (!pwd) {
-    showToast('請先輸入密碼');
+    showToast("請先輸入密碼");
     return;
   }
 
   // 一開始就打開 loading、隱藏其它區塊
-  loadingEl.style.display = 'flex';
-  loginSectionEl.style.display = 'none';
+  loadingEl.style.display = "flex";
+  loginSectionEl.style.display = "none";
   if (appSectionEl) {
-    appSectionEl.style.display = 'none';
+    appSectionEl.style.display = "none";
   }
 
   try {
@@ -811,35 +1236,35 @@ loginButton.addEventListener('click', async () => {
     console.error(err);
 
     // 登入或初始化失敗 → 關掉 loading、回登入畫面
-    loadingEl.style.display = 'none';
-    loginSectionEl.style.display = 'block';
+    loadingEl.style.display = "none";
+    loginSectionEl.style.display = "block";
     if (appSectionEl) {
-      appSectionEl.style.display = 'none';
+      appSectionEl.style.display = "none";
     }
 
-    showToast('登入失敗，請確認密碼是否正確');
+    showToast("登入失敗，請確認密碼是否正確");
     state.isAuthenticated = false;
-    state.token = '';
+    state.token = "";
   } finally {
-    loginPasswordInput.value = '';
+    loginPasswordInput.value = "";
   }
 });
 
 // 按 Enter 登入
-loginPasswordInput.addEventListener('keydown', async (event) => {
-  if (event.key !== 'Enter') return;
+loginPasswordInput.addEventListener("keydown", async (event) => {
+  if (event.key !== "Enter") return;
 
   event.preventDefault();
   const pwd = loginPasswordInput.value.trim();
   if (!pwd) {
-    showToast('請先輸入密碼');
+    showToast("請先輸入密碼");
     return;
   }
 
-  loadingEl.style.display = 'flex';
-  loginSectionEl.style.display = 'none';
+  loadingEl.style.display = "flex";
+  loginSectionEl.style.display = "none";
   if (appSectionEl) {
-    appSectionEl.style.display = 'none';
+    appSectionEl.style.display = "none";
   }
 
   try {
@@ -848,20 +1273,19 @@ loginPasswordInput.addEventListener('keydown', async (event) => {
   } catch (err) {
     console.error(err);
 
-    loadingEl.style.display = 'none';
-    loginSectionEl.style.display = 'block';
+    loadingEl.style.display = "none";
+    loginSectionEl.style.display = "block";
     if (appSectionEl) {
-      appSectionEl.style.display = 'none';
+      appSectionEl.style.display = "none";
     }
 
-    showToast('登入失敗，請確認密碼是否正確');
+    showToast("登入失敗，請確認密碼是否正確");
     state.isAuthenticated = false;
-    state.token = '';
+    state.token = "";
   } finally {
-    loginPasswordInput.value = '';
+    loginPasswordInput.value = "";
   }
 });
-
 
 modeCodingButton.addEventListener("click", () => setMode("coding"));
 modeReadingButton.addEventListener("click", () => setMode("reading"));
@@ -912,5 +1336,27 @@ writingAddTimeButton.addEventListener("click", () => {
     writingEndTimeInput.value
   );
 });
+
+// 檢視歷史單日記錄卡片 modal
+dayCardClose.addEventListener("click", closeDayCard);
+
+// 點擊遮罩關閉
+dayCardModal.addEventListener("click", (e) => {
+  if (e.target === dayCardModal) {
+    closeDayCard();
+  }
+});
+
+// 切換月檢視卡片
+if (dayCardCalendarToggle) {
+  dayCardCalendarToggle.addEventListener('click', () => {
+    if (currentViewDate) {
+      openMonthView(currentViewDate);
+    } else {
+      openMonthView(state.currentDate); // 退而求其次用今天
+    }
+  });
+}
+
 
 document.addEventListener("DOMContentLoaded", init);

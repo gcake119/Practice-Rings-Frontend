@@ -284,6 +284,24 @@
         </section>
       </main>
     </section>
+    <!-- 歷史日記錄卡片 Modal -->
+    <div id="dayCardModal" class="modal-overlay" style="display: none">
+      <div class="modal-card hand-drawn-box">
+        <div class="modal-card-top-right">
+          <button
+            id="dayCardCalendarToggle"
+            class="day-card-calendar-button"
+            aria-label="切換月檢視"
+          >
+            📅
+          </button>
+          <button id="dayCardClose" class="modal-close">✕</button>
+        </div>
+
+        <!-- 內容 & 導覽由 JS 決定是日還是月 -->
+        <div id="dayCardContent"></div>
+      </div>
+    </div>
 
     <!-- 錯誤提示橫幅 -->
     <div id="toast" class="toast"></div>
