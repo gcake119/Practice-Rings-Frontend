@@ -394,6 +394,40 @@ async function saveTodayMinutesOnly() {
   if (!res.ok) throw new Error("儲存時間失敗");
 }
 
+async function handleDownloadBackup() {
+  try {
+    showToast('正在準備備份檔案...');
+    
+    const res = await fetch(`${API_BASE}/api/export`, {
+      headers: buildHeaders(),
+    });
+    
+    if (!res.ok) {
+      throw new Error('下載失敗');
+    }
+    
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // 生成檔名：progress-backup-YYYYMMDD-HHMMSS.json
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19).replace('T', '-');
+    a.download = `progress-backup-${timestamp}.json`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('✅ 備份下載成功！');
+  } catch (err) {
+    console.error('下載備份失敗:', err);
+    showToast('❌ 下載備份失敗，請稍後再試');
+  }
+}
+
 function showToast(message) {
   const toast = document.getElementById("toast");
   if (!toast) return;
@@ -1384,6 +1418,42 @@ saveTodayButton.addEventListener("click", async () => {
   } catch (err) {
     console.error(err);
     showToast("儲存失敗，請稍後再試");
+  }
+});
+
+// 下載備份按鈕
+const downloadBackupButton = document.getElementById("downloadBackupButton");
+downloadBackupButton.addEventListener("click", async () => {
+  try {
+    showToast('正在準備備份檔案...');
+    
+    const res = await fetch(`${API_BASE}/api/export`, {
+      headers: buildHeaders(),
+    });
+    
+    if (!res.ok) {
+      throw new Error('下載失敗');
+    }
+    
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // 生成檔名：progress-backup-YYYYMMDD-HHMMSS.json
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19).replace('T', '-');
+    a.download = `progress-backup-${timestamp}.json`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('✅ 備份下載成功！');
+  } catch (err) {
+    console.error('下載備份失敗:', err);
+    showToast('❌ 下載備份失敗，請稍後再試');
   }
 });
 

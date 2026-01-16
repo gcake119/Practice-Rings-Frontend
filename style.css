@@ -204,6 +204,34 @@ body {
   box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.15);
 }
 
+/* Icon button (for download backup) */
+.icon-button {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 2px solid var(--dora-text);
+  font-size: 1.2rem;
+  cursor: pointer;
+  background: var(--dora-white);
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
+  transition: transform 0.1s, box-shadow 0.1s, background 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+}
+
+.icon-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.15);
+  background: #f5f5f5;
+}
+
+.icon-button:active {
+  transform: translateY(0);
+  box-shadow: 1px 1px 0 rgba(0, 0, 0, 0.12);
+}
+
 /* Rings section */
 .rings-section {
   margin-top: 16px;
