@@ -9,7 +9,7 @@ Practice Rings（修煉圈圈）是一個用三個圈圈追蹤每日學習投入
 - 最近 7 天的小型同心圓紀錄列。
 - 呼叫後端 API 讀寫每日進度與目標設定。
 
-完整系統規格請參考後端 repo 的 `docs/SDD.md`。
+完整系統規格請參考公開版說明：[docs/SDD.md](docs/SDD.md)。
 
 ## Tech Stack
 
