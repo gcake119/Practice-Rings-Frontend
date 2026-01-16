@@ -941,28 +941,21 @@ body {
   inset: 0;
   margin: auto;
   border-radius: 50%;
-  background: conic-gradient(
-    var(--ring-color) var(--ring-percent),
-    #e5e5e5 0deg
-  );
 }
 
 .month-ring-outer {
   width: 28px;
   height: 28px;
-  --ring-color: #ff5b5b; /* coding */
 }
 
 .month-ring-middle {
   width: 22px;
   height: 22px;
-  --ring-color: #3ac48b; /* reading */
 }
 
 .month-ring-inner {
   width: 16px;
   height: 16px;
-  --ring-color: #ffb347; /* writing */
 }
 
 .month-ring-center {
