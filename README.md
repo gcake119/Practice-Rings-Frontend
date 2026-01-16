@@ -56,8 +56,12 @@ Practice Rings（修煉圈圈）是一個用三個圈圈追蹤每日學習投入
     - 成功加入一段手動時間。
     - 重新載入當日紀錄（從後端取得 today progress）。
   - 使用者不需要按「儲存今天」也會看到最新的進度與勵志文案。
+- 手動備份下載：
+  - 在「最近修煉紀錄 Recent Days」標題旁有 📥 下載按鈕。
+  - 點擊可立即下載完整的 progress.json 備份檔案。
+  - 備份檔案自動命名為 `progress-backup-YYYYMMDD-HHMMSS.json`，避免檔案覆蓋。
+  - 可配合後端的 GitHub Actions 自動備份方案一起使用（詳見 `backup-guide.md`）。
 
 ## 未來規劃（前端）
 
 - 加入目標設定 UI，透過 `/api/settings` 直接調整每日目標，並即時影響圈圈百分比與勵志台詞的計算。
-- 支援多使用者登入後的 user 狀態顯示。
