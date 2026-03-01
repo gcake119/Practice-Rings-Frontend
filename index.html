@@ -277,7 +277,12 @@
 
         <!-- 歷史紀錄區 -->
         <section class="history-section">
-          <h2 class="section-title">最近修煉紀錄 Recent Days</h2>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <h2 class="section-title" style="margin: 0;">最近修煉紀錄 Recent Days</h2>
+            <button id="downloadBackupButton" class="icon-button" title="下載備份" aria-label="下載備份">
+              📥
+            </button>
+          </div>
           <div id="historyList" class="history-list">
             <!-- 由 app.js 動態插入 -->
           </div>

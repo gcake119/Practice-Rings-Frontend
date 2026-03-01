@@ -321,6 +321,43 @@ async function fetchRecentProgress(days = 7) {
   state.recentRecords = Array.isArray(data.records) ? data.records : [];
 }
 
+async function fetchMonthProgress(year, month) {
+  // 計算該月份的天數範圍
+  const firstDay = new Date(year, month - 1, 1);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  // 計算從該月第一天到今天有多少天
+  const daysFromMonthStartToToday = Math.ceil(
+    (today.getTime() - firstDay.getTime()) / (1000 * 60 * 60 * 24)
+  );
+  
+  // 計算該月天數
+  const lastDay = new Date(year, month, 0);
+  const daysInMonth = lastDay.getDate();
+  
+  // 需要請求的天數：從月初到今天的天數，加上足夠的安全邊際
+  // 如果月份在過去，至少請求 35 天來確保覆蓋整個月
+  const requiredDays = Math.max(
+    daysFromMonthStartToToday + 5,
+    daysInMonth + 5
+  );
+  
+  const res = await fetch(
+    `${API_BASE}/api/progress/recent?days=${encodeURIComponent(requiredDays)}`,
+    {
+      headers: buildHeaders(),
+    }
+  );
+  if (!res.ok) {
+    console.error('Failed to fetch month progress');
+    return;
+  }
+  const data = await res.json();
+  console.log(`Fetching ${requiredDays} days for ${year}-${month}, got ${data.records.length} records`);
+  state.recentRecords = Array.isArray(data.records) ? data.records : [];
+}
+
 async function saveTodayFull() {
   const body = {
     date: state.currentDate,
@@ -355,6 +392,40 @@ async function saveTodayMinutesOnly() {
   });
 
   if (!res.ok) throw new Error("儲存時間失敗");
+}
+
+async function handleDownloadBackup() {
+  try {
+    showToast('正在準備備份檔案...');
+    
+    const res = await fetch(`${API_BASE}/api/export`, {
+      headers: buildHeaders(),
+    });
+    
+    if (!res.ok) {
+      throw new Error('下載失敗');
+    }
+    
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // 生成檔名：progress-backup-YYYYMMDD-HHMMSS.json
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19).replace('T', '-');
+    a.download = `progress-backup-${timestamp}.json`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('✅ 備份下載成功！');
+  } catch (err) {
+    console.error('下載備份失敗:', err);
+    showToast('❌ 下載備份失敗，請稍後再試');
+  }
 }
 
 function showToast(message) {
@@ -625,7 +696,13 @@ function openMonthView(focusDateStr) {
   const [y, m] = focusDateStr.split('-').map((v) => Number(v));
   currentMonthDate = new Date(y, m - 1, 1);
 
-  renderMonthView();
+  // 獲取該月份的數據後再渲染
+  fetchMonthProgress(y, m).then(() => {
+    renderMonthView();
+  }).catch(err => {
+    console.error('Error fetching month progress:', err);
+    renderMonthView(); // 即使出錯也嘗試渲染
+  });
 }
 
 // === Render ===
@@ -1049,6 +1126,7 @@ function renderMonthView() {
 
   // 日期格子
   let gridHtml = '<div class="month-grid">';
+  let debugCount = 0;
   cells.forEach(({ date, inMonth }) => {
     const yyyy = date.getFullYear();
     const mm = String(date.getMonth() + 1).padStart(2, '0');
@@ -1057,6 +1135,10 @@ function renderMonthView() {
     const displayDay = date.getDate();
 
     const rec = recordMap[key];
+    if (rec && debugCount < 3) {
+      console.log(`Date ${key}:`, rec);
+      debugCount++;
+    }
 
     const codingMinutes = rec ? Number(rec.codingMinutes) || 0 : 0;
     const readingMinutes = rec ? Number(rec.readingMinutes) || 0 : 0;
@@ -1079,13 +1161,17 @@ function renderMonthView() {
     const readingDeg = readingP * 360;
     const writingDeg = writingP * 360;
 
+    if (debugCount < 3 && (codingDeg > 0 || readingDeg > 0 || writingDeg > 0)) {
+      console.log(`Date ${key} degrees:`, { codingDeg, readingDeg, writingDeg, minutes: { codingMinutes, readingMinutes, writingMinutes } });
+    }
+
     gridHtml += `
       <div class="month-cell ${inMonth ? '' : 'month-cell-outside'}" data-date="${key}">
         <div class="month-cell-day">${displayDay}</div>
         <div class="month-cell-rings">
-          <div class="month-ring-outer" style="--ring-percent: ${codingDeg}deg;"></div>
-          <div class="month-ring-middle" style="--ring-percent: ${readingDeg}deg;"></div>
-          <div class="month-ring-inner" style="--ring-percent: ${writingDeg}deg;"></div>
+          <div class="month-ring-outer" style="background-image: conic-gradient(#ff5b5b ${codingDeg}deg, #e5e5e5 ${codingDeg}deg);"></div>
+          <div class="month-ring-middle" style="background-image: conic-gradient(#3ac48b ${readingDeg}deg, #e5e5e5 ${readingDeg}deg);"></div>
+          <div class="month-ring-inner" style="background-image: conic-gradient(#ffb347 ${writingDeg}deg, #e5e5e5 ${writingDeg}deg);"></div>
           <div class="month-ring-center"></div>
         </div>
       </div>
@@ -1107,6 +1193,18 @@ dayCardContent.innerHTML = `
   </div>
 `;
 
+  // 驗證月卡片是否正確渲染
+  const ringElements = dayCardContent.querySelectorAll('.month-ring-outer');
+  console.log('Ring elements rendered:', ringElements.length);
+  if (ringElements.length > 0) {
+    const firstRing = ringElements[0];
+    console.log('First ring style:', firstRing.getAttribute('style'));
+    console.log('First ring computed style - background:', window.getComputedStyle(firstRing).background);
+  }
+
+  console.log('Month view HTML sample:', gridHtml.substring(0, 500));
+  console.log('Total cells rendered:', (gridHtml.match(/month-ring-outer/g) || []).length);
+
   // 綁定事件：返回日檢視 / 上月 / 下月 / 點日期
   const backBtn = document.getElementById('monthBackToDay');
   const prevBtn = document.getElementById('monthPrevBtn');
@@ -1123,15 +1221,21 @@ dayCardContent.innerHTML = `
 
   if (prevBtn) {
     prevBtn.addEventListener('click', () => {
-      currentMonthDate = new Date(year, month - 1, 1);
-      renderMonthView();
+      const prevMonth = new Date(year, month - 1, 1);
+      currentMonthDate = prevMonth;
+      fetchMonthProgress(prevMonth.getFullYear(), prevMonth.getMonth() + 1).then(() => {
+        renderMonthView();
+      });
     });
   }
 
   if (nextBtn) {
     nextBtn.addEventListener('click', () => {
-      currentMonthDate = new Date(year, month + 1, 1);
-      renderMonthView();
+      const nextMonth = new Date(year, month + 1, 1);
+      currentMonthDate = nextMonth;
+      fetchMonthProgress(nextMonth.getFullYear(), nextMonth.getMonth() + 1).then(() => {
+        renderMonthView();
+      });
     });
   }
 
@@ -1314,6 +1418,42 @@ saveTodayButton.addEventListener("click", async () => {
   } catch (err) {
     console.error(err);
     showToast("儲存失敗，請稍後再試");
+  }
+});
+
+// 下載備份按鈕
+const downloadBackupButton = document.getElementById("downloadBackupButton");
+downloadBackupButton.addEventListener("click", async () => {
+  try {
+    showToast('正在準備備份檔案...');
+    
+    const res = await fetch(`${API_BASE}/api/export`, {
+      headers: buildHeaders(),
+    });
+    
+    if (!res.ok) {
+      throw new Error('下載失敗');
+    }
+    
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // 生成檔名：progress-backup-YYYYMMDD-HHMMSS.json
+    const now = new Date();
+    const timestamp = now.toISOString().replace(/[:.]/g, '-').slice(0, 19).replace('T', '-');
+    a.download = `progress-backup-${timestamp}.json`;
+    
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showToast('✅ 備份下載成功！');
+  } catch (err) {
+    console.error('下載備份失敗:', err);
+    showToast('❌ 下載備份失敗，請稍後再試');
   }
 });
 
